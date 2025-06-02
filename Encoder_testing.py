@@ -5,7 +5,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, LSTM, RepeatVector, Dense
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 
 def load_and_preprocess(file_path, scaler=None, window_size=10, fit_scaler=False):
     df = pd.read_csv(file_path)
@@ -64,36 +63,21 @@ if __name__ == "__main__":
     LEARN_FILE = 'learn_ds.csv'
     TEST_FILE = 'test_ds_kate.csv'
 
-    # 1. Загрузка и подготовка данных
     data, scaler = load_and_preprocess(LEARN_FILE, window_size=WINDOW_SIZE)
     X_train, X_val = train_test_split(data, test_size=0.1, random_state=42)
 
-    # 2. Построение модели
     feature_dim = data.shape[2]
     autoencoder = build_lstm_autoencoder(WINDOW_SIZE, feature_dim)
 
-    # 3. Обучение
     train_model(autoencoder, X_train, X_val)
 
-    # 4. Определение порога на тренировочных данных
     mse_train = calculate_mse(autoencoder, X_train)
     threshold = find_threshold(mse_train, percentile=95)
     print(f"Порог аномалии (95-й перцентиль): {threshold:.5f}")
 
-    # 5. Анализ тестового набора (с тем же scaler!)
     test_data, _ = load_and_preprocess(TEST_FILE, scaler=scaler, window_size=WINDOW_SIZE)
     mse_test = calculate_mse(autoencoder, test_data)
 
-    # 6. Вероятность легитимности по тесту (средняя по всем окнам)
     probabilities = calculate_legitimacy_probability(mse_test)
     avg_prob = np.mean(probabilities)
     print(f"Средняя вероятность легитимности пользователя: {avg_prob:.4f}")
-
-    # 7. Визуализация MSE теста
-    plt.plot(mse_test, label='MSE теста')
-    plt.axhline(y=threshold, color='r', linestyle='--', label='Порог аномалии')
-    plt.title('MSE по тестовому набору')
-    plt.xlabel('Индекс последовательности')
-    plt.ylabel('MSE')
-    plt.legend()
-    plt.show()
