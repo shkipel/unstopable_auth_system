@@ -2,34 +2,27 @@ import csv
 import time
 from pynput import keyboard
 
-# Путь для сохранения логов
 LOG_FILE = "test_ds_z.csv"
 
-# Словарь для отслеживания времени нажатия клавиш
 key_press_times = {}
 
-# Переменная для хранения времени последнего события
 last_event_time = None
 
-# Счётчик записей
-row_count = 1  # начинаем с 1, потому что первая строка — заголовок
+row_count = 1
 
-
-# Функция инициализации CSV файла
 def init_csv():
     with open(LOG_FILE, mode='w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            "timestamp_press",   # Время нажатия (микросекунды)
-            "timestamp_release", # Время отпускания (микросекунды)
-            "key_code",          # Код клавиши (например, 'a', 'Key.shift')
-            "key_char",          # Символ (если доступен)
-            "hold_time",         # Время удержания (мс)
-            "latency"            # Интервал между нажатиями (мс)
+            "timestamp_press",   
+            "timestamp_release", 
+            "key_code",         
+            "key_char",        
+            "hold_time",         
+            "latency"           
         ])
 
 
-# Обработка нажатия клавиши
 def on_press(key):
     global last_event_time
     try:
@@ -44,7 +37,6 @@ def on_press(key):
         print(f"Ошибка в on_press: {e}")
 
 
-# Обработка отпускания клавиши
 def on_release(key):
     global last_event_time, row_count
     try:
@@ -76,16 +68,13 @@ def on_release(key):
             # Проверка: если достигли 513 строк (1 заголовок + 512 данных)
             if row_count >= 513:
                 print("Достигнуто 513 строк. Завершаем логирование.")
-                return False  # остановит listener
+                return False 
 
     except Exception as e:
         print(f"Ошибка в on_release: {e}")
 
-
-# Инициализация CSV
 init_csv()
 
-# Запуск слушателя клавиатуры
 with keyboard.Listener(
     on_press=on_press,
     on_release=on_release
